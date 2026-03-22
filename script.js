@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var WHATSAPP_E164 = "";
+  var WHATSAPP_E164 = "5561982359529";
   var DEFAULT_MESSAGE = "Olá, Matheus! Vim pela landing page.";
 
   function buildWhatsAppUrl(message) {
@@ -22,7 +22,7 @@
         var url = buildWhatsAppUrl(msg);
         if (url === "#contato") {
           window.alert(
-            "Configure seu número do WhatsApp na variável WHATSAPP_E164 no arquivo script.js (apenas dígitos, com DDI, ex.: 5511999999999)."
+            "error"
           );
           return;
         }
