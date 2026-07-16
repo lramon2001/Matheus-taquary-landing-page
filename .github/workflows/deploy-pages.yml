@@ -26,6 +26,25 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Generate resultados lista
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("resultados")
+          root.mkdir(exist_ok=True)
+          exts = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+          files = sorted(
+              [p.name for p in root.iterdir() if p.is_file() and p.suffix.lower() in exts],
+              key=str.lower,
+          )
+          (root / "lista.json").write_text(
+              json.dumps(files, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(f"resultados: {len(files)} imagem(ns)")
+          PY
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var WHATSAPP_E164 = "";
+  var WHATSAPP_E164 = "5561982359529";
   var DEFAULT_MESSAGE = "Olá, Matheus! Vim pela landing page.";
 
   function buildWhatsAppUrl(message) {
@@ -125,11 +125,113 @@
     if (y) y.textContent = String(new Date().getFullYear());
   }
 
+  function initResultadosCarousel() {
+    var root = document.querySelector("[data-carousel]");
+    if (!root) return;
+
+    var track = root.querySelector("[data-carousel-track]");
+    var viewport = root.querySelector("[data-carousel-viewport]");
+    var dotsWrap = root.querySelector("[data-carousel-dots]");
+    var prevBtn = root.querySelector("[data-carousel-prev]");
+    var nextBtn = root.querySelector("[data-carousel-next]");
+    if (!track || !viewport || !dotsWrap || !prevBtn || !nextBtn) return;
+
+    var slides = Array.prototype.slice.call(track.querySelectorAll(".carousel-slide"));
+    var total = slides.length;
+    if (!total) return;
+
+    var index = 0;
+    var autoTimer = null;
+    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    dotsWrap.innerHTML = "";
+    slides.forEach(function (_slide, i) {
+      var dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "carousel-dot" + (i === 0 ? " is-active" : "");
+      dot.setAttribute("role", "tab");
+      dot.setAttribute("aria-label", "Ir para resultado " + (i + 1));
+      dot.setAttribute("aria-selected", i === 0 ? "true" : "false");
+      dot.addEventListener("click", function () {
+        setIndex(i);
+        startAuto();
+      });
+      dotsWrap.appendChild(dot);
+    });
+
+    function setIndex(next) {
+      index = (next + total) % total;
+      track.style.transform = "translateX(-" + index * 100 + "%)";
+      dotsWrap.querySelectorAll(".carousel-dot").forEach(function (dot, i) {
+        dot.classList.toggle("is-active", i === index);
+        dot.setAttribute("aria-selected", i === index ? "true" : "false");
+      });
+    }
+
+    function stopAuto() {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+      }
+    }
+
+    function startAuto() {
+      stopAuto();
+      if (reduceMotion || total < 2) return;
+      autoTimer = setInterval(function () {
+        setIndex(index + 1);
+      }, 4500);
+    }
+
+    prevBtn.addEventListener("click", function () {
+      setIndex(index - 1);
+      startAuto();
+    });
+    nextBtn.addEventListener("click", function () {
+      setIndex(index + 1);
+      startAuto();
+    });
+
+    root.addEventListener("mouseenter", stopAuto);
+    root.addEventListener("mouseleave", startAuto);
+    root.addEventListener("focusin", stopAuto);
+    root.addEventListener("focusout", startAuto);
+
+    var touchX = null;
+    viewport.addEventListener(
+      "touchstart",
+      function (e) {
+        touchX = e.changedTouches[0].clientX;
+        stopAuto();
+      },
+      { passive: true }
+    );
+    viewport.addEventListener(
+      "touchend",
+      function (e) {
+        if (touchX == null) return;
+        var dx = e.changedTouches[0].clientX - touchX;
+        touchX = null;
+        if (Math.abs(dx) < 40) {
+          startAuto();
+          return;
+        }
+        setIndex(index + (dx < 0 ? 1 : -1));
+        startAuto();
+      },
+      { passive: true }
+    );
+
+    setIndex(0);
+    startAuto();
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initWhatsAppLinks();
     initHeader();
     initNav();
     initAccordion();
+    initResultadosCarousel();
     initReveal();
     initYear();
   });
